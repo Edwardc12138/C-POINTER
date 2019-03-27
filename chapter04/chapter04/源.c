@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 //判断是否是闰年
 int IsLeapYear(int year) {
@@ -31,7 +32,7 @@ int hungry() {
 
 //吃汉堡
 void eat_hanberger() {
-	hunger -= 20;		//假设一个汉堡减少20上网饥饿值
+	hunger -= 20;		//假设一个汉堡减少20饥饿值
 }
 
 //求正数的平方根
@@ -64,6 +65,7 @@ int IsPrime(int n) {
 	return 1;			//是质数
 }
 
+//判断三角形类型
 int TriangleType(double a, double b, double c) {
 	if (a <= 0 || b <= 0 || c <= 0 ||
 		(a + b) <= c || (b + c) <= a || (c + a) <= b) {
@@ -111,13 +113,96 @@ void copy_n(char dst[], char src[], int n) {
 	}
 }
 
+
+//从书中src中向后偏移start个位置开始,最多复制len个非NUL字符到dst中
+int substr(char dst[], int dst_cap, char src[], int src_size, int start, int len) {
+	if ((dst_cap - 1) < len ||		//dst数组没有足够空间容纳长为len个的字符串
+		(src_size - 1) < start ||	//start偏移以超出字符串范围
+		start < 0 || len < 0) {
+		strcpy(dst, "");
+		return 0;
+	}
+	int curr = 0;
+	for (; curr <= len && src[curr + start] != '\0'; ++curr) {
+		dst[curr] = src[curr + start];
+	}
+	dst[curr] = '\0';
+	return curr - 1;				//返回字符串长度
+}
+
+//去除字符串中多余的空格
+void deblank(char str[]) {
+	//int count = 0;	//统计每次出现空格的次数	
+	//for (int curr = 0; str[curr] != '\0'; ++curr) {	//遍历字符串
+	//	if (str[curr] == ' ') {						//遇到空格统计加1
+	//		++count;
+	//	}
+	//	else if (count < 2) {						//只有一个空格,统计清零
+	//		count = 0;
+	//	}
+	//	else {
+	//		int next = curr;
+	//		for (; str[next] != '\0'; ++next) {		//将当前下标之后的字符串内容向前移动count-1个
+	//			str[next - count + 1] = str[next];
+	//		}
+	//		str[next - count + 1] = str[next];		//将'\0'向前移count-1个
+	//		curr -= (count - 1);					//将当前下标向前移动count-1个
+	//		count = 0;								//统计清零
+	//	}
+	//}
+
+	char buff[128];
+	int buff_sub = 0;
+	for (int curr = 0; str[curr] != '\0'; ++curr) {
+		if (str[curr] == ' ' && str[curr + 1] == ' ') {	//数组当前和下一位都为空格就跳过一次循环
+			continue;
+		}
+		buff[buff_sub] = str[curr];
+		++buff_sub;
+	}
+	buff[buff_sub] = '\0';
+	strcpy(str, buff);
+}
+
 int main() {
-	//编程练习5.
+	//编程练习7.编写程序从字符串中去除多余的空格
+	printf("请输入: ");
+	char input[40];
+	gets(input);
+	deblank(input);
+	printf("%s\n", input);
+
+	//编程练习6.编写一个从字符串中提取子字符串
+	//char input[20], output[20];
+	//printf("请输入: ");
+	//gets(input);
+	//substr(output, 20, input, strlen(input), 0, 14);
+	//printf("输出: %s\n", output);
+
+	//编程练习5.读取输入,有连续多行文本内容相同,则打印一行,其余不打印
+	//printf("请输入:\n");
+	//char curr[128],	//当前行文本
+	//	prev[128];	//上一行文本
+	//int need_out = 0;	//是否输出
+	//do {
+	//	gets(curr);
+	//	//if (strcmp("over", curr) == 0) {	//over表示输入结束
+	//	//	break;
+	//	//}
+	//	if (strcmp(prev, curr) == 0) {		//相同则需要输出
+	//		need_out = 1;
+	//	}
+	//	if (strcmp(prev, curr) != 0 && need_out) {	//不同时且需要输出
+	//			printf("输出: %s\n", prev);
+	//			need_out = 0;
+	//	}
+	//	strcpy(prev, curr);
+	//} while (strcmp("over", curr) != 0);	//over表示输入结束
 
 	//编程练习4.编写copy_n函数
-	char arr[20];
-	copy_n(arr, "a b c d e f g h", 5);
-	printf("%s\n", arr);
+	//char arr[20];
+	//copy_n(arr, "a b c d e f g h", 5);
+	//printf("%s\n", arr);
 
 	//编程练习3.根据输入判断三角形类型
 	//double a, b, c;	//三角形的三条边长
