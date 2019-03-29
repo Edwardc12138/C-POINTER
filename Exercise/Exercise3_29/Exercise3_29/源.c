@@ -9,7 +9,7 @@
 
 static char chessboard[MAX_ROW][MAX_COL];		//棋盘
 
-//初始化游戏
+//菜单
 int Init() {
 	printf("********************************\n");
 	printf("***** 开始:1 ****** 退出:0 *****\n");
@@ -110,6 +110,7 @@ int IsFull() {
 }
 
 //判定胜负
+//谁赢返回谁,平局返回d,没人赢,棋盘未满返回c
 char Winner() {
 	//每行是否连成
 	for (int row = 0; row < MAX_ROW; ++row) {
@@ -141,7 +142,7 @@ char Winner() {
 	return 'd';					//平局
 }
 
-//游戏
+//游戏主体
 char Game() {
 	InitBoard();
 	char result;
@@ -164,6 +165,7 @@ char Game() {
 
 	system("cls");
 	PrintBoard();			//打印结束时的棋盘
+	//输出胜负
 	if (result == 'X') {
 		printf("您胜利了!\n");
 		return result;
