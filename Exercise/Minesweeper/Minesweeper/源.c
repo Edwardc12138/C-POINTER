@@ -65,20 +65,20 @@ void InitMap(char* map, int max_row, int max_col) {
 // 地雷图,行边界,列边界,布雷数
 void Lay_Mines(char* mine_map, int max_row, int max_col, int number_of_mines) {
 	srand((unsigned int)time(NULL));
-	while (number_of_mines > 0) {
+	while (number_of_mines > 0) {		// 随机生成地雷位置
 		int row = rand() % max_row;
 		int col = rand() % max_col;
 		char* mine_position = mine_map + row * max_col + col;
-		if (*mine_position == MINE) {	// 判断当前位置是否存在雷,@表示雷
+		if (*mine_position == MINE) {	// 当前位置存在雷,重新生成地雷位置
 			continue;
 		}
-		*mine_position = MINE;	// 当前位置设为地雷
+		*mine_position = MINE;			// 当前位置设为地雷
 		--number_of_mines;
 	}
 }
 
 // 打印地图
-// 地图,行边界,列边界
+// 地图,行边界,列边界,地雷数
 void PrintMap(char* map, int max_row, int max_col, int number_of_mines) {
 	// 打印剩余地雷
 	printf("剩余地雷: %d\n\n", number_of_mines);
@@ -94,6 +94,7 @@ void PrintMap(char* map, int max_row, int max_col, int number_of_mines) {
 		}
 	}
 	printf("\n");
+
 	// 打印每行
 	for (int row = 0; row < max_row;++row) {
 		// 打印行分割线
@@ -114,6 +115,7 @@ void PrintMap(char* map, int max_row, int max_col, int number_of_mines) {
 		}
 		printf(" |\n");
 	}
+	// 打印最后一行的结束分割线
 	for (int col = 0; col <= max_col; ++col) {
 		printf("---|");
 	}
@@ -121,16 +123,18 @@ void PrintMap(char* map, int max_row, int max_col, int number_of_mines) {
 }
 
 // 玩家扫雷
-// 显示地图,行边界,列边界,位置行,位置列
+// 显示地图,行边界,列边界,输出位置行和位置列
 void PlayerAction(char* show_map, int max_row, int max_col, int* row_out, int* col_out) {
 	printf("请输入排雷位置的行,列: ");
 	while (1) {
 		scanf("%d,%d", row_out, col_out);
-		if (*row_out < 0 || *row_out >= max_row || *col_out < 0 || *col_out >= max_col) {	// 超出边界
+		// 判断输入是否超出边界值
+		if (*row_out < 0 || *row_out >= max_row || *col_out < 0 || *col_out >= max_col) {
 			printf("非法位置!请重新输入: ");
 			continue;
 		}
-		if (*(show_map + *row_out * max_col + *col_out) != UNOPENED_MAP) {							// 位置已排除
+		// 判断位置是否翻过
+		if (*(show_map + *row_out * max_col + *col_out) != UNOPENED_MAP) {
 			printf("当前位置以排除!请重新输入: ");
 			continue;
 		}
@@ -146,6 +150,7 @@ int ResultJudge(char* mine_map, int max_row, int max_col, int row, int col) {
 	}
 	int sum = max_row * max_col;
 	for (int curr = 0; curr < sum; ++curr) {
+		// 地图上还有未翻开地图,游戏继续,否则玩家胜利
 		if (*(mine_map + curr) == UNOPENED_MAP) {
 			return 1;	// 继续游戏
 		}
@@ -156,11 +161,13 @@ int ResultJudge(char* mine_map, int max_row, int max_col, int row, int col) {
 // 更新地图
 // 显示地图,地雷图,行边界,列边界,位置行,位置列
 void UpdateMap(char* show_map, char* mine_map, int max_row, int max_col, int row, int col) {
+	// 递归退出
 	if (row < 0 || col < 0 || row >= max_row || col >= max_col
 		|| *(mine_map + row * max_col + col) != UNOPENED_MAP) {
 		return;
 	}
-	int count = 48;	// 周围有几颗雷
+	// 周围地雷数统计
+	int count = 48;
 	// mine_map[row - 1][col - 1]是否是雷
 	if (row > 0 && col > 0 && *(mine_map + (row - 1) * max_col + (col - 1)) == MINE) {
 		++count;
@@ -197,7 +204,7 @@ void UpdateMap(char* show_map, char* mine_map, int max_row, int max_col, int row
 		*(show_map + row * max_col + col) = 0;
 		*(mine_map + row * max_col + col) = 0;
 	}
-	else {
+	else {				// 有雷赋为地雷数
 		*(show_map + row * max_col + col) = count;
 		*(mine_map + row * max_col + col) = count;
 	}
@@ -213,46 +220,49 @@ void UpdateMap(char* show_map, char* mine_map, int max_row, int max_col, int row
 
 // 判断雷周围是否还有未翻开地图
 // 地雷图,行边界,列边界,位置行,位置列
+// 地雷位置周边一圈是否还有未翻开的地图,0表示有,1表示没有
 int IsOpeded(char* mine_map, int max_row, int max_col, int row, int col) {
 	if (row > 0 && col > 0 && *(mine_map + (row - 1) * max_col + (col - 1)) == UNOPENED_MAP) {
-		return 0;	// 周围存在未翻开地图
+		return 0;
 	}
 	// mine_map[row - 1][col]是否是雷
 	if (row > 0 && *(mine_map + (row - 1) * max_col + col) == UNOPENED_MAP) {
-		return 0;	// 周围存在未翻开地图
+		return 0;
 	}
 	// mine_map[row - 1][col + 1]是否是雷
 	if (row > 0 && col < (max_col - 1) && *(mine_map + (row - 1) * max_col + (col + 1)) == UNOPENED_MAP) {
-		return 0;	// 周围存在未翻开地图
+		return 0;
 	}
 	// mine_map[row][col - 1]是否是雷
 	if (col > 0 && *(mine_map + row * max_col + (col - 1)) == UNOPENED_MAP) {
-		return 0;	// 周围存在未翻开地图
+		return 0;
 	}
 	// mine_map[row][col + 1]是否是雷
 	if (col < (max_col - 1) && *(mine_map + row * max_col + (col + 1)) == UNOPENED_MAP) {
-		return 0;	// 周围存在未翻开地图
+		return 0;
 	}
 	// mine_map[row + 1][col - 1]是否是雷
 	if (row < (max_row - 1) && col > 0 && *(mine_map + (row + 1) * max_col + (col - 1)) == UNOPENED_MAP) {
-		return 0;	// 周围存在未翻开地图
+		return 0;
 	}
 	// mine_map[row + 1][col]是否是雷
 	if (row < (max_row - 1) && *(mine_map + (row + 1) * max_col + col) == UNOPENED_MAP) {
-		return 0;	// 周围存在未翻开地图
+		return 0;
 	}
 	// mine_map[row + 1][col + 1]是否是雷
 	if (row < (max_row - 1) && col < (max_col - 1) && *(mine_map + (row + 1) * max_col + (col + 1)) == UNOPENED_MAP) {
-		return 0;	// 周围存在未翻开地图
+		return 0;
 	}
-	return 1;		// 周围不存在未翻开地图
+	return 1;
 }
 
 // 是否要标记地雷,返回剩余雷数
-// 地雷图,行边界,列边界,地雷数
+// 显示地图,地雷图,行边界,列边界,地雷数
 void NumberOfMines(char* show_map, char* mine_map, int max_row, int max_col, int* number_of_mines_out) {
+	// 遍历数组
 	for (int row = 0; row < max_row; ++row) {
 		for (int col = 0; col < max_col; ++col) {
+			// 找到雷的位置并判断周围除了地雷是否还有未翻开的地图
 			if (*(mine_map + row * max_col + col) == MINE && IsOpeded(mine_map, max_row, max_col, row, col)) {
 				int choice;
 				printf("是否要将(%d,%d)位置标记为地雷!是 1, 否 0\n", row, col);
@@ -262,9 +272,11 @@ void NumberOfMines(char* show_map, char* mine_map, int max_row, int max_col, int
 					scanf("%d", &choice);
 				}
 				if (choice) {
+					// 两张地图以找到地雷位置进行标记
 					*(show_map + row * max_col + col) = MARKE;
 					*(mine_map + row * max_col + col) = MARKE;
-					--*number_of_mines_out;
+					--*number_of_mines_out;		// 地雷总数减少
+					// 更新地图
 					system("cls");
 					PrintMap(show_map, max_row, max_col, *number_of_mines_out);		// 打印地图
 				}
@@ -274,40 +286,50 @@ void NumberOfMines(char* show_map, char* mine_map, int max_row, int max_col, int
 }
 
 // 游戏主体
+// 玩家看到的地图, 保存有地雷位置的地图, 地图数组的行边界, 地图数组的列边界, 该局生成的地雷数
 void Game(char* show_map, char* mine_map, int max_row, int max_col, int number_of_mines) {
 	InitMap(show_map, max_row, max_col);					// 初始化显示地图
 	InitMap(mine_map, max_row, max_col);					// 初始化地雷图
 	Lay_Mines(mine_map, max_row, max_col, number_of_mines);	// 布雷
 
 	int result;
-	time_t start = time();
+	time_t start = time();	// 计算用时起
 	while (1) {
 		int row, col;		// 玩家输入的位置行,列
-		system("cls");
-		PrintMap(show_map, max_row, max_col, number_of_mines);		// 打印地图
+		// 打印地图
+		system("cls");		// 清空屏幕
+		PrintMap(show_map, max_row, max_col, number_of_mines);
+		// 计算剩余雷数
 		NumberOfMines(show_map, mine_map, max_row, max_col, &number_of_mines);
-		PlayerAction(show_map, max_row, max_col, &row, &col);		//玩家排雷
-		UpdateMap(show_map, mine_map, max_row, max_col, row, col);	//更新地图		
+		// 玩家排雷
+		PlayerAction(show_map, max_row, max_col, &row, &col);
+		// 更新地图	
+		UpdateMap(show_map, mine_map, max_row, max_col, row, col);
+		// 获取当前游戏状态
 		result = ResultJudge(mine_map, max_row, max_col, row, col);
-		if (!result) {												//踩到雷
-			*(mine_map + row * max_col + col) = 'X';				//标记踩到的雷
+		if (!result) {									// 踩到雷
+			*(mine_map + row * max_col + col) = 'X';	// 标记踩到的雷
 			break;
 		}
-		else if (result == 2) {										//游戏胜利
+		else if (result == 2) {							// 游戏胜利
+			number_of_mines = 0;						// 清空剩余地雷数
 			break;
 		}		
 	}
-	time_t end = time();
+	time_t end = time();	// 计算用时结束
 
+	// 打印游戏结束时的地图
 	system("cls");
-	PrintMap(mine_map, max_row, max_col, number_of_mines);					// 打印地图
+	PrintMap(mine_map, max_row, max_col, number_of_mines);
+	printf("\n游戏结束\n");
 	if (result == 2) {
-		printf("\n恭喜您获得胜利!\n");
+		printf("恭喜您获得胜利!\n");
 	}
 	else {
-		printf("\n您失败了!\n");
+		printf("您失败了!\n");
 	}
-	printf("用时: %d\n", end - start);
+	int ret =  end - start;
+	printf("用时: %d:%d\n", ret / 60, ret % 60);
 }
 
 int main() {
