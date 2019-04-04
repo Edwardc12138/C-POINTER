@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 //递归方法求斐波那契
 int FibRec(int n) {
@@ -67,27 +68,6 @@ int DigitSum(int n) {
 	return n % 10 + DigitSum(n / 10);
 }
 
-//逆置字符串的字符
-void Reverse(char* left, char* right) {
-	if (left >= right) {		//前后指针比较大小,确定退出条件
- 		return;
-	}
-	char tmp = *left;			//交换前后指针
-	*left = *right;
-	*right = tmp;
-	Reverse(++left, --right);
-}
-
-void reverse_string(char * string) {
-	int len = 0;			//存储字符串长度
-	char* tmp = string;
-	while (*tmp != '\0') {	//计算字符串长度
-		++tmp;
-		++len;
-	}
-	Reverse(string, string + len - 1);	//调用递归
-}
-
 //递归strlen
 int StrLenRec(char* str) {
 	if (*str == '\0') {
@@ -104,6 +84,19 @@ int StrLenNoRec(char* str) {
 		++len;
 	}
 	return len;
+}
+
+//逆置字符串的字符
+void reverse_string(char * string) {
+	int len;
+	if ((len = StrLenNoRec(string)) == 0) {
+		return;
+	}
+	char ch = *string;
+	*string = *(string + len - 1);
+	*(string + len - 1) = '\0';
+	reverse_string(string + 1);
+	*(string + len - 1) = ch;
 }
 
 //递归n的阶乘
@@ -141,7 +134,7 @@ void Print(int n) {
 	printf("%d ", n % 10);	
 }
 
-int main() {
+//int main() {
 	//Print(1729);
 	//printf("\n");
 
@@ -152,10 +145,10 @@ int main() {
 	//printf("递归: %d\n", StrLenRec(str));
 	//printf("非递归: %d\n", StrLenNoRec(str));
 
-	char str[] = "abc";
-	printf("%s\n", str);
-	reverse_string(str);
-	printf("%s\n", str);
+	//char str[] = "i have a pen";
+	//printf("%s\n", str);
+	//reverse_string(str);
+	//printf("%s\n", str);
 
 	//printf("%d\n", DigitSum(1729));
 
@@ -163,6 +156,66 @@ int main() {
 
 	//printf("递归: %d\n", FibRec(40));
 	//printf("非递归: %d\n", FibNoRec(40));
+
+//	system("pause");
+//	return 0;
+//}
+
+// 已知n个整数x1,x2,x3.....xn,以及一个整数k(k < n),从n个整数中任选K个数
+// 相加,可分别得到一系列的和,例如当n=4,k=3,4个整数分别为3,7,12,19时,可
+// 得全部的组合与他们的和为:
+// 3 + 7 + 12 = 22
+// 3 + 7 + 19 = 29
+// 7 + 12 + 19 = 38
+// 3 + 12 + 19 = 34
+// 现在要求你计算出和为素数共有多少种
+
+//是否是质数
+int IsPrime(int n) {
+	if (n <= 1) {
+		return 0;
+	}
+
+	int square_n = sqrt(n);
+	for (int i = 2; i <= square_n; ++i) {	//从2除到n的平方根,之后的不用判断
+		if (n % i == 0) {
+			return 0;	//不是质数
+		}
+	}
+	return 1;			//是质数
+}
+
+int Func(int* arr, int n, int k, int curr, int sum) {
+	static count = 0;
+	if (k == 0) {
+		printf("%d ", sum);
+		count += IsPrime(sum);
+		return 0;
+	}
+
+	for (; curr < n; ++curr) {
+		Func(arr, n, k - 1, curr + 1, sum + *(arr + curr));
+	}
+	return count;
+}
+
+//int Func2(int* arr, int n, int k, int sum) {
+//	static count = 0;
+//	if (k == 0) {
+//		printf("%d ", sum);
+//		count += IsPrime(sum);
+//		return 0;
+//	}
+//
+//	for (int curr = 0; curr < k - 1; ++curr) {
+//		Func2(arr + curr + 1, n - 1, k - 1,  sum + *(arr + curr));
+//	}
+//	return count;
+//}
+
+int main() {
+	int arr[] = { 3,7,12,19 };	
+	printf("\n%d\n", Func(arr, 4, 3, 0, 0));
 
 	system("pause");
 	return 0;
