@@ -1,26 +1,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+int IsAlong(int *arr, int n) {
+	int ret = 0;
+	for (int curr = 0; curr < n; ++curr) {
+		ret |= (1 << arr[curr]);
+	}
+	return ret == 0x3e;
+}
+
 // 1
 void Func1() {
-	for (int a = 1; a <= 5; ++a) {
-		for (int b = 1; b <= 5; ++b) {
-			for (int c = 1; c <= 5; ++c) {
-				for (int d = 1; d <= 5; ++d) {
-					for (int e = 1; e <= 5;++e) {
-						if (/*a != b && a != c && a != d && a != e &&
-							b != c && b != d && b != e &&
-							c != d && c != e &&
-							d != e*/
-							a * b * c * d * e == 120) {		// a b c d e五个数互不相同
-							if ((b == 2) ^ (a == 3) &&		// a说的条件
-								(b == 2) ^ (e == 4) &&		// b说的条件
-								(c == 1) ^ (d == 2) &&		// c说的条件
-								(c == 5) ^ (d == 3) &&		// d说的条件
-								(e == 4) ^ (a == 1)) {		// e说的条件
-								printf("a = %d b = %d c = %d d = %d e = %d\n", a, b, c, d, e);
-								//return;
-							}
+	int arr[5] = { 0 };
+	for (arr[0] = 1; arr[0] <= 5; ++arr[0]) {
+		for (arr[1] = 1; arr[1] <= 5; ++arr[1]) {
+			for (arr[2] = 1; arr[2] <= 5; ++arr[2]) {
+				for (arr[3] = 1; arr[3] <= 5; ++arr[3]) {
+					for (arr[4] = 1; arr[4] <= 5;++arr[4]) {
+						//if (arr[0] * arr[1] * arr[2] * arr[3] * arr[4] == 120 &&	// 五个数互不相同
+						if (IsAlong(arr,5) &&
+							(arr[1] == 2) ^ (arr[0] == 3) &&		// a说的条件
+							(arr[1] == 2) ^ (arr[4] == 4) &&		// b说的条件
+							(arr[2] == 1) ^ (arr[3] == 2) &&		// c说的条件
+							(arr[2] == 5) ^ (arr[3] == 3) &&		// d说的条件
+							(arr[4] == 4) ^ (arr[0] == 1)) {		// e说的条件
+							printf("a = %d b = %d c = %d d = %d e = %d\n", arr[0], arr[1], arr[2], arr[3], arr[4]);
+							return;
 						}
 					}
 				}
@@ -65,7 +70,7 @@ void Func2() {
 	//	}
 	//}
 
-	//
+
 	for (char muder = 'A';muder <= 'D'; ++muder) {
 		// 只有一个人说谎,条件3真1假
 		//     A说不是A          B说是C           C说是D          D说C胡说
@@ -77,7 +82,11 @@ void Func2() {
 
 // 打印杨辉三角,n 行数
 void PrintPascalsTriangle(int n) {
-	// 我的想法
+	if (n < 1) {
+		return;
+	}
+
+	// 相当于两个一维数组来回交换
 	//int arr[2][1024] = { 0 };	// arr[0]存储上一行的内容,arr[1]存储当前行的内容
 	//arr[0][1] = 1;
 
@@ -93,24 +102,37 @@ void PrintPascalsTriangle(int n) {
 	//}
 
 	// 时间空间最优解
-	if (n < 1) {
-		return;
-	}
+	//printf("1\n");		// 输出第一个1
+	//for (int row = 2; row <= n; ++row) {
+	//	int s = 1;
+	//	printf("1 ");	// 每行第一个1
+	//	for (int col = 1; col <= row - 2; ++col) {
+	//		printf("%d ", s = (row - col) * s / col);
+	//	}
+	//	printf("1\n");	// 每行最后一个1
+	//}
 
-	printf("1\n");		// 输出第一个1
+	// 使用一维数组
+	int arr[1024] = { 0 };
+	printf("%d\n", arr[0] = 1);	// 第一行
 	for (int row = 2; row <= n; ++row) {
-		int s = 1;
 		printf("1 ");	// 每行第一个1
-		for (int col = 1; col <= row - 2; ++col) {
-			printf("%d ", s = (row - col) * s / col);
+		for (int col =  row - 1; col > 1; --col) {
+			// 当前位置值等于它自己加上前一个数
+			printf("%d ", arr[col - 1] += arr[col - 2]);
 		}
-		printf("1\n");	// 每行最后一个1
+		printf("%d\n", arr[row - 1] = 1);	// 每行最后一个1
 	}
 }
 
 int main() {
-	//Func1();
-	Func2();
+	// 1
+	Func1();
+
+	// 2
+	//Func2();
+
+	// 3
 	//PrintPascalsTriangle(10);
 
 	system("pause");
