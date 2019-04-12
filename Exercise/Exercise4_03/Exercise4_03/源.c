@@ -19,23 +19,35 @@ double Average(double a, double b) {
 
 // 3.找到一组数中只出现过一次的数
 int FindAlong(int arr[], int n) {
-	for (int curr = 0; curr < n; ++curr) {		// 遍历数组
-		int tmp = ~arr[curr];					// 对当前数取反
-		int next = curr + 1;
-		for (; next < n; ++next) {				// 从下一个位置判断是否存在与当前值相等的数
-			if ((~(tmp ^ arr[next])) == 0) {	// 取反的当前数与之后的数异或在取反结果为0,则这两个数相等
-				int a = arr[curr + 1];			// 交换与当前数相同的数与当前位置的下一位置的数
-				arr[curr + 1] = arr[next];
-				arr[next] = a;
-				++curr;							// 跳过下一个循环
-				break;
-			}
-		}
-		if (next == n) {						// 未找到
-			return arr[curr];					// 返回当前数
-		}
+	if (arr == NULL) {
+		return -1;
 	}
-	return -1;
+
+	//
+	//for (int curr = 0; curr < n; ++curr) {		// 遍历数组
+	//	int tmp = ~arr[curr];					// 对当前数取反
+	//	int next = curr + 1;
+	//	for (; next < n; ++next) {				// 从下一个位置判断是否存在与当前值相等的数
+	//		if ((~(tmp ^ arr[next])) == 0) {	// 取反的当前数与之后的数异或在取反结果为0,则这两个数相等
+	//			int a = arr[curr + 1];			// 交换与当前数相同的数与当前位置的下一位置的数
+	//			arr[curr + 1] = arr[next];
+	//			arr[next] = a;
+	//			++curr;							// 跳过下一个循环
+	//			break;
+	//		}
+	//	}
+	//	if (next == n) {						// 未找到
+	//		return arr[curr];					// 返回当前数
+	//	}
+	//}
+	//return -1;
+
+	// 与同一个数异或两次,值不变
+	int ret = 0;
+	for (int curr = 0; curr < n; ++curr) {
+		ret ^= arr[curr];
+	}
+	return ret;
 }
 
 // 4
@@ -50,25 +62,43 @@ void ReverseArr(char* left, char* right) {
 
 
 void ReverseStr(char str[]) {
-	int len = 0;
-	for (int curr = 0; str[curr] != '\0'; ++curr) {
-		++len;
+	if (str == NULL) {
+		return;
 	}
-	ReverseArr(str, str + len - 1);	// 整体逆置
-	for (int left = 0; left < len; ++left) {
-		int right = left;
-		for (; right < len && str[right] != ' '; ++right);	//找到每个单词
-		if (right - left < 2) {			//单词长度小于1,不做改变
-			left = right;
-			continue;
-		}
-		if (right == len) {				// 最后一个单词逆置
+
+	//int len = 0;
+	//for (int curr = 0; str[curr] != '\0'; ++curr) {
+	//	++len;
+	//}
+
+	//ReverseArr(str, str + len - 1);	// 整体逆置
+	//for (int left = 0; left < len; ++left) {
+	//	int right = left;
+	//	for (; right < len && str[right] != ' '; ++right);	//找到每个单词
+	//	if (right - left < 2) {			//单词长度小于1,不做改变
+	//		left = right;
+	//		continue;
+	//	}
+	//	if (right == len) {				// 最后一个单词逆置
+	//		ReverseArr(str + left, str + right - 1);
+	//		return;
+	//	}
+	//	ReverseArr(str + left, str + right - 1);	// 每一个单词逆置
+	//	left = right;
+	//}
+
+	int left = 0;
+	int right = 0;
+
+	for (; str[right] != '\0'; ++right) {
+		if (str[right] == ' ') {	// 逆置每个单词
 			ReverseArr(str + left, str + right - 1);
-			return;
+			left = right + 1;
 		}
-		ReverseArr(str + left, str + right - 1);	// 每一个单词逆置
-		left = right;
 	}
+	ReverseArr(str + left, str + right - 1);	// 逆置最后一个单词
+
+	ReverseArr(str, str + right - 1);			// 逆置整个字符串
 }
 
 int main() {
@@ -88,6 +118,7 @@ int main() {
 	//int arr[] = { 12,45,56,45,12,23,56 };
 	//printf("%d\n", FindAlong(arr, sizeof(arr) / sizeof(arr[0])));
 
+	// 4
 	char arr[] = "student a am i";
 	printf("%s\n", arr);
 	ReverseStr(arr);
