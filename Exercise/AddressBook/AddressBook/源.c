@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 // 联系人信息
 typedef struct ContactInfo {
@@ -11,8 +12,9 @@ typedef struct ContactInfo {
 
 // 通讯录
 typedef struct AddressBook {
-	ContactInfo contact_info[1024];
+	ContactInfo *contact_info;
 	int size;
+	int cap;
 } AddressBook;
 
 static AddressBook g_address_book;
@@ -54,13 +56,14 @@ int UpdateContactInfo(int number) {
 	printf("********************************\n");
 	ContactInfo *info = &g_address_book.contact_info[number];
 	char tmp_info[1024] = { 0 };
+	setbuf(stdin, NULL);
 	printf("  姓名(%s): ", info->name);
-	scanf("%s", &tmp_info);
+	gets(tmp_info);
 	if (tmp_info[0] != '/') {
 		strcpy(info->name, tmp_info);
 	}
 	printf("  电话(%s): ", info->phone_number);
-	scanf("%s", &tmp_info);
+	gets(tmp_info);
 	if (tmp_info[0] != '/') {
 		strcpy(info->phone_number, tmp_info);
 	}
@@ -153,21 +156,29 @@ void SortContact() {
 // 新建联系人
 void AddContact() {
 	system("cls");
-	if (g_address_book.size >= 1024) {
-		printf("********************************\n");
-		printf("******* 新增未能成功执行 *******\n");
-		printf("********************************\n");
-		system("pause");
-		return;
+	//if (g_address_book.size >= 1024) {
+	//	printf("********************************\n");
+	//	printf("******* 新增未能成功执行 *******\n");
+	//	printf("********************************\n");
+	//	system("pause");
+	//	return;
+	//}
+	if (g_address_book.size >= g_address_book.cap) {	// 内存空间满了
+														// 重新申请内存空间
+		g_address_book.contact_info =
+			(ContactInfo *)realloc(g_address_book.contact_info, 2 * g_address_book.size * sizeof(ContactInfo));
+		// 修改容量
+		g_address_book.cap = 2 * g_address_book.size;
 	}
 	ContactInfo *info = &g_address_book.contact_info[g_address_book.size];
 	printf("********************************\n");
 	printf("********** 新建联系人 **********\n");
 	printf("********************************\n");
 	printf("  姓名: ");
-	scanf("%s", info->name);
+	setbuf(stdin, NULL);
+	gets(info->name);
 	printf("  电话: ");
-	scanf("%s", info->phone_number);
+	gets(info->phone_number);
 	printf("********************************\n");
 	printf("*********** 新增成功 ***********\n");
 	printf("********************************\n");
@@ -250,8 +261,76 @@ void ClearAllContact() {
 	// 取消,乱输都视为失败
 }
 
+// 去掉加载联系人是读入的换行符
+char * DelWrap(char *str) {
+	if (str == NULL) {
+		return NULL;
+	}
+	int len = strlen(str);
+	str[len - 1] = str[len];
+	return str;
+}
+
+// 加载联系人
+void loadContactInfo() {
+	// 打开文件
+	FILE *fp = fopen("../contactinfo.txt", "r");
+	if (fp == NULL) {	// 判空
+		printf("%s\n", strerror(errno));
+		system("pause");
+		return;
+	}
+	char buf[1024] = { 0 };	// 输入缓冲
+	while (fgets(buf,1024,fp) != NULL) {
+		if (g_address_book.size >= g_address_book.cap) {	// 内存空间满了
+			// 重新申请内存空间
+			g_address_book.contact_info = 
+				(ContactInfo *)realloc(g_address_book.contact_info, 2 * g_address_book.size * sizeof(ContactInfo));
+			// 修改容量
+			g_address_book.cap = 2 * g_address_book.size;
+		}
+		ContactInfo *info = &g_address_book.contact_info[g_address_book.size];
+		strcpy(info->name, DelWrap(buf));
+		++g_address_book.size;
+		if (fgets(buf, 1024, fp) != NULL) {
+			strcpy(info->phone_number, DelWrap(buf));
+		}
+	}
+	// 关闭文件
+	fclose(fp);
+}
+
+// 保存联系人信息
+void SaveContactInfo() {
+	// 打开文件
+	FILE *fp = fopen("../contactinfo.txt", "w");
+	if (fp == NULL) {	// 判空
+		printf("%s\n", strerror(errno));
+		system("pause");
+		return;
+	}
+	// 将数据保存到文件中
+	for (int curr = 0; curr < g_address_book.size; ++curr) {
+		ContactInfo *info = &g_address_book.contact_info[curr];
+		fprintf(fp, "%s\n", info->name);
+		fprintf(fp, "%s\n", info->phone_number);
+	}
+	// 关闭文件
+	fclose(fp);
+}
+
+// 初始化
+void Init() {
+	// 初始化联系人上限为64人
+	g_address_book.contact_info = (ContactInfo *)malloc(64 * sizeof(ContactInfo));
+	g_address_book.size = 0;
+	g_address_book.cap = 64;
+	loadContactInfo();	// 加载已有的联系人
+}
+
 int main() {
 	void(*pfunc[3])() = { AddContact, SearchContact, ClearAllContact };
+	Init();
 
 	while (1) {
 		system("cls");
@@ -265,6 +344,8 @@ int main() {
 			printf("输入非法!请重输: ");
 		}
 		if (chiose == 10003) {	// 退出
+			SaveContactInfo();
+			free(g_address_book.contact_info);
 			break;
 		}
 		else if ((chiose - 10000) >= 0) {	// 功能
